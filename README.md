@@ -2,7 +2,9 @@
   <img width="800" height="320" alt="endlessrunner-demo" src="https://github.com/user-attachments/assets/80cd7be4-880c-443c-b884-a604c9a130fd" />
 </p>
 
-# EndlessRunner
+<div align="center">
+  <h1>EndlessRunner</h1>
+</div>
 
 <p align="center">
   <strong>A little running. A lot of dodging. An endless chase for the high score.</strong>
@@ -33,12 +35,10 @@ Jump over obstacles, slide under flying enemies, collect stars, complete mini-ga
 
 <p align="center">
   <img width="1001" height="403" alt="Image" src="https://github.com/user-attachments/assets/48f48677-40aa-40ab-90f8-0b63376f13f2" />
-  <img width="1000" height="401" alt="Image" src="https://github.com/user-attachments/assets/9b95411e-3485-458e-95f7-719d2764b7b0" />
 </p>
 
 <p align="center">
   <img width="1001" height="404" alt="Image" src="https://github.com/user-attachments/assets/5fbfa899-79af-44fa-91c6-0709b9259ff7" />
-  <img width="998" height="402" alt="Image" src="https://github.com/user-attachments/assets/fb973729-3fee-4da8-bd97-728652f41686" />
 </p>
 
 ---
