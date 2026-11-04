@@ -1,7 +1,3 @@
-<p align="center">
-  <img width="800" height="320" alt="endlessrunner-demo" src="https://github.com/user-attachments/assets/80cd7be4-880c-443c-b884-a604c9a130fd" />
-</p>
-
 <div align="center">
   <h1>EndlessRunner</h1>
 </div>
@@ -12,6 +8,10 @@
 
 <p align="center">
   A 2D endless runner built with Python and Pygame, inspired by the classic Chrome Dinosaur Game.
+</p>
+
+<p align="center">
+  <img width="800" height="320" alt="endlessrunner-demo" src="https://github.com/user-attachments/assets/80cd7be4-880c-443c-b884-a604c9a130fd" />
 </p>
 
 <p align="center">
