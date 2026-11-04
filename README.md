@@ -401,7 +401,6 @@ Developed By
 </table>
 </div>
 <div align="center">
-Made with ❤️ by [Abhinav](https://github.com/iabhnv19)<br>
  If this Project seems cool, consider starring the repo!
 </div>
 </div>
