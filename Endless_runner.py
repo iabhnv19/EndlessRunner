@@ -1,9 +1,13 @@
+import array
 import math
 import os
 import random
 import sys
 import pygame
+pygame.mixer.pre_init(44100, -16, 2, 512)
 pygame.init()
+if not pygame.mixer.get_init():
+    pygame.mixer.init()
 
 WIDTH, HEIGHT = 1000, 400
 GROUND_Y = 320
@@ -38,9 +42,48 @@ font = pygame.font.SysFont("consolas", 22, bold=True)
 small_font = pygame.font.SysFont("consolas", 18, bold=True)
 big_font = pygame.font.SysFont("consolas", 40, bold=True)
 ASSET_DIR = os.path.join(BASE_DIR, "assets")
+SFX_DIR = os.path.join(ASSET_DIR, "sfx")
 
 def load(name):
     return pygame.image.load(os.path.join(ASSET_DIR, name)).convert_alpha()
+
+def load_sfx(name, trim_leading=False):
+    path = os.path.join(SFX_DIR, name)
+    try:
+        snd = pygame.mixer.Sound(path)
+        if trim_leading:
+            raw = snd.get_raw()
+            samples = array.array("h", raw)
+            for i, s in enumerate(samples):
+                if abs(s) > 300:
+                    first_sample = i - (i % 2)
+                    if first_sample > 0:
+                        return pygame.mixer.Sound(buffer=raw[first_sample * 2:])
+                    break
+        return snd
+    except Exception as e:
+        print(f"Warning: Failed to load sound {name}: {e}")
+        return None
+
+def play_sfx(sfx, loops=0):
+    if sfx:
+        try:
+            sfx.play(loops=loops)
+        except Exception:
+            pass
+
+def stop_sfx(sfx):
+    if sfx:
+        try:
+            sfx.stop()
+        except Exception:
+            pass
+
+sfx_start = load_sfx("start1.mp3", trim_leading=True)
+sfx_jump = load_sfx("jump.mp3")
+sfx_star = load_sfx("star.mp3")
+sfx_minigame_bgm = load_sfx("minigamebgm1.mp3")
+sfx_ends = [s for s in (load_sfx("end.mp3"), load_sfx("end2.mp3")) if s is not None]
 
 dino_run = [load("run1.svg"), load("run2.svg")]
 dino_duck = load("dino_duck.svg")
@@ -75,6 +118,10 @@ card_hover_img = load("card_hover.svg")
 card_icons = [load(n) for n in ("icon_heart.svg", "icon_star.svg", "icon_laptop.svg","icon_book.svg", "icon_mug.svg", "icon_bulb.svg")]
 
 def quit_game():
+    try:
+        pygame.mixer.stop()
+    except Exception:
+        pass
     pygame.quit()
     sys.exit()
 
@@ -176,6 +223,7 @@ class Dino:
         if self.on_ground:
             self.vel_y = JUMP_SPEED
             self.on_ground = False
+            play_sfx(sfx_jump)
 
     def update(self, keys):
         self.ducking = keys[pygame.K_DOWN] and self.on_ground
@@ -604,48 +652,58 @@ def play_mini_game(game, backdrop):
     """Runs one mini game on top of a frozen screenshot. Returns win / lose / draw / skip."""
     ended_at = None
     pygame.event.clear()
+    stop_sfx(sfx_start)
+    play_sfx(sfx_minigame_bgm)
 
-    while True:
-        clock.tick(FPS)
-        now = pygame.time.get_ticks()
+    try:
+        while True:
+            clock.tick(FPS)
+            now = pygame.time.get_ticks()
 
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                quit_game()
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                return "skip"
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    quit_game()
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                    return "skip"
+                if game.result:
+                    press = (event.type == pygame.KEYDOWN and event.key in (pygame.K_SPACE, pygame.K_RETURN)) or \
+                            (event.type == pygame.MOUSEBUTTONDOWN and event.button == 1)
+                    if press and ended_at is not None and now - ended_at > 500:
+                        return game.result
+                else:
+                    game.handle_event(event)
+
+            game.update()
+            if game.result and ended_at is None:
+                ended_at = now
+                if game.result == "win":
+                    spawn_burst(WIDTH // 2, 200, "gold", 30)
+
+            screen.blit(backdrop, (0, 0))
+            screen.blit(dim_img, (0, 0))
+            screen.blit(mini_panel_img, PANEL_POS)
+            draw_text(f"MINI GAME: {game.title}", font, WHITE, (WIDTH // 2, PANEL_POS[1] + 28))
+            game.draw()
+
             if game.result:
-                press = (event.type == pygame.KEYDOWN and event.key in (pygame.K_SPACE, pygame.K_RETURN)) or \
-                        (event.type == pygame.MOUSEBUTTONDOWN and event.button == 1)
-                if press and ended_at is not None and now - ended_at > 500:
-                    return game.result
+                bonus = MINI_GAME_REWARDS[game.result]
+                draw_text(f"BONUS +{bonus}" if bonus else "NO BONUS", font, DARK, game.bonus_pos)
+                draw_text("click / SPACE to go on", small_font, TEXT, game.footer_pos)
             else:
-                game.handle_event(event)
+                draw_text(f"WIN +{MINI_GAME_REWARDS['win']}   ESC = skip", small_font, TEXT, game.footer_pos)
 
-        game.update()
-        if game.result and ended_at is None:
-            ended_at = now
-            if game.result == "win":
-                spawn_burst(WIDTH // 2, 200, "gold", 30)
-
-        screen.blit(backdrop, (0, 0))
-        screen.blit(dim_img, (0, 0))
-        screen.blit(mini_panel_img, PANEL_POS)
-        draw_text(f"MINI GAME: {game.title}", font, WHITE, (WIDTH // 2, PANEL_POS[1] + 28))
-        game.draw()
-
-        if game.result:
-            bonus = MINI_GAME_REWARDS[game.result]
-            draw_text(f"BONUS +{bonus}" if bonus else "NO BONUS", font, DARK, game.bonus_pos)
-            draw_text("click / SPACE to go on", small_font, TEXT, game.footer_pos)
-        else:
-            draw_text(f"WIN +{MINI_GAME_REWARDS['win']}   ESC = skip", small_font, TEXT, game.footer_pos)
-
-        draw_particles()
-        pygame.display.flip()
+            draw_particles()
+            pygame.display.flip()
+    finally:
+        stop_sfx(sfx_minigame_bgm)
 
 def run_round():
     """Plays until game over. Returns 'restart' or 'menu'."""
+    for s in sfx_ends:
+        stop_sfx(s)
+    stop_sfx(sfx_start)
+    play_sfx(sfx_start)
+
     dino = Dino()
     obstacles, stars = [], []
     clouds = [Cloud(random.randint(0, WIDTH)) for _ in range(3)]
@@ -670,6 +728,9 @@ def run_round():
                 quit_game()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
+                    stop_sfx(sfx_start)
+                    for s in sfx_ends:
+                        stop_sfx(s)
                     return "menu"
                 if event.key in (pygame.K_SPACE, pygame.K_UP):
                     if game_over:
@@ -690,12 +751,16 @@ def run_round():
 
             for ob in obstacles:
                 ob.update(speed)
-                if ob.hitbox().colliderect(dino.hitbox()):
+                if not game_over and ob.hitbox().colliderect(dino.hitbox()):
                     game_over = True
+                    stop_sfx(sfx_start)
+                    if sfx_ends:
+                        play_sfx(random.choice(sfx_ends))
                     add_score(int(score))
                     if int(score) > best:
                         best, new_best = int(score), True
                         spawn_burst(dino.x + 24, dino.y + 30, "gold", 30)
+                    break
             obstacles = [o for o in obstacles if o.rect.right > 0]
             star_timer -= 1
             if star_timer <= 0:
@@ -707,6 +772,7 @@ def run_round():
                     st.alive = False
                     stars_collected += 1
                     score += STAR_POINTS
+                    play_sfx(sfx_star)
                     spawn_burst(*st.rect().center, "gold", 14)
                     banner = Banner(f"STAR!  +{STAR_POINTS}", 45)
             stars = [s for s in stars if s.alive]
