@@ -23,8 +23,15 @@ MINI_GAME_REWARDS = {"win": 50, "draw": 10, "lose": 0, "skip": 0}   # bonus poin
 STAR_POINTS = 10                           # points for each star
 MAX_SCORES = 5                             # leaderboard length
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-SCORE_PATH = os.path.join(BASE_DIR, "dinorunner_highscore.txt")   # one score per line
+if getattr(sys, "frozen", False):
+    BUNDLE_DIR = sys._MEIPASS
+    EXE_DIR = os.path.dirname(sys.executable)
+else:
+    BUNDLE_DIR = os.path.dirname(os.path.abspath(__file__))
+    EXE_DIR = BUNDLE_DIR
+
+BASE_DIR = BUNDLE_DIR
+SCORE_PATH = os.path.join(EXE_DIR, "dinorunner_highscore.txt")   # one score per line
 
 BG = (247, 247, 247)
 TEXT = (83, 83, 83)
@@ -87,6 +94,7 @@ sfx_minigame_bgm = load_sfx("minigamebgm1.mp3")
 sfx_ends = [s for s in (load_sfx("end.mp3"), load_sfx("end2.mp3")) if s is not None]
 
 dino_run = [load("run1.svg"), load("run2.svg")]
+pygame.display.set_icon(dino_run[0])
 dino_duck = load("dino_duck.svg")
 book_img = load("book.svg")
 jeep_img = pygame.transform.scale_by(load("jeep.svg"), 1.35)

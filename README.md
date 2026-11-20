@@ -46,12 +46,14 @@ Jump over obstacles, slide under flying enemies, collect stars, complete mini-ga
 ## Key Features
 
 - **Endless Gameplay** – Continuously generated obstacles with dynamic speed scaling.
+- **Audio & Sound System** – Full immersive SFX: instant game start, jump sounds, star collection chimes, roaring Jeep drive-by, mini-game cues, and randomized death sounds.
+- **Speeding Jeep Hazard** – Surprise high-speed Jeep event that tears across the track with custom audio and tire smoke effects.
+- **Unpredictable Obstacle Mechanics** – Rhythmic variations including quick double-hurdle bursts, double-book clusters, and 3 distinct bird flight altitudes.
 - **Player Animations** – Fluid animated running, jumping, and ducking mechanics.
-- **Dynamic Obstacles** – Avoid ground obstacles like books and airborne birds with unique trajectories.
-- **Star Collection System** – Collect stars during your run for extra bonus points.
-- **Interactive Mini-Games** – Triggered every 300 points for extra reward opportunities.
+- **Star Collection System** – Collect stars during your run for extra bonus points with sparkle bursts.
+- **Interactive Mini-Games** – Triggered every 300 points for extra reward opportunities (Tic-Tac-Toe, Guess the Number, Memory Match).
 - **Local Leaderboard** – Tracks top 5 scores across playthroughs via local storage.
-- **Interactive Game Menu** – Clean navigation for Start Game, Leaderboard, and Quit options.
+- **Standalone Windows Executable** – Zero installation required; portable single-file `DinoRunner.exe` with custom taskbar icon.
 - **Visual FX** – Animated backgrounds, dynamic clouds, star particles, and score notifications.
 
 ---
@@ -204,10 +206,11 @@ Below is a breakdown of vector assets used inside the game graphics engine:
 | Category | Asset File | Purpose |
 | :--- | :--- | :--- |
 | **Sprites** | `run1.svg`, `run2.svg`, `dino_duck.svg` | Player movement and state animations |
-| **Enemies** | `bird1.svg`, `bird2.svg`, `book.svg` | Flying and ground obstacle entities |
+| **Enemies & Hazards** | `bird1.svg`, `bird2.svg`, `book.svg`, `jeep.svg` | Flying birds, book hurdles, and high-speed Jeep hazard |
+| **Sound Effects (SFX)** | `start1.mp3`, `jump.mp3`, `star.mp3`, `jeeeep.mp3`, `minigamebgm1.mp3`, `end.mp3`, `end2.mp3` | Complete audio effects system inside `assets/sfx/` |
 | **Environment** | `background.svg`, `ground.svg`, `cloud.svg` | Dynamic scrolling background layers |
 | **Collectibles** | `star.svg`, `star_small.svg`, `spark_gold.svg`, `spark_green.svg` | Score pickups and visual particle effects |
-| **UI Components** | `banner.svg`, `menu_logo.svg`, `button.svg`, `button_hover.svg` | Menu headers, titles, and button states |
+| **UI Components** | `banner.svg`, `menu_logo.svg`, `button.svg`, `button_hover.svg`, `icon.ico` | Menu headers, titles, button states, and app icon |
 | **Panels** | `leaderboard_panel.svg`, `gameover_panel.svg`, `mini_panel.svg`, `dim.svg` | Modal popups, overlays, and game screens |
 | **Mini-Game** | `ttt_board.svg`, `ttt_x.svg`, `ttt_o.svg`, `ttt_hover.svg`, `ttt_win.svg` | Tic-Tac-Toe mini-game visual assets |
 | **Cards & Icons** | `card_back.svg`, `card_face.svg`, `card_hover.svg`, `card_matched.svg`, `icon_*.svg` | Memory card mini-game and status icons |
@@ -239,12 +242,17 @@ Below is a breakdown of vector assets used inside the game graphics engine:
 
 ## Getting Started
 
-### Prerequisites
+### Option 1: Standalone Executable (Windows)
+No Python installation required!
+1. Download `DinoRunner.exe` from the latest release or find it in `dist/DinoRunner.exe`.
+2. Double-click **`DinoRunner.exe`** to play.
 
+### Option 2: Run from Source
+
+#### Prerequisites
 Ensure you have Python 3 and `pip` installed on your system.
 
-### Installation
-
+#### Installation
 1. **Clone the repository**
    ```bash
    git clone https://github.com/iabhnv19/EndlessRunner.git
@@ -257,7 +265,7 @@ Ensure you have Python 3 and `pip` installed on your system.
 
 3. **Install dependencies**
    ```bash
-   pip install pygame
+   pip install -r requirements.txt
    ```
 
 4. **Launch the game**
@@ -273,16 +281,23 @@ Ensure you have Python 3 and `pip` installed on your system.
 EndlessRunner/
 │
 ├── assets/
+│   ├── sfx/                      # Sound effects (start, jump, star, jeep, end, minigame)
 │   ├── background.svg
 │   ├── banner.svg
 │   ├── bird1.svg / bird2.svg
 │   ├── book.svg
+│   ├── jeep.svg
+│   ├── icon.ico
 │   ├── run1.svg / run2.svg / dino_duck.svg
 │   ├── star.svg / spark_*.svg
 │   ├── ttt_*.svg
 │   └── ... (all SVG game graphics)
 │
+├── dist/
+│   └── DinoRunner.exe            # Standalone Windows executable
+│
 ├── Endless_runner.py
+├── requirements.txt
 ├── dinorunner_highscore.txt
 ├── .gitignore
 ├── LICENSE
@@ -366,12 +381,12 @@ Check that your display driver is updated and no external frame rate limiters ar
 
 ## Future Improvements
 
-- Add sound effects and dynamic background music.
-- Introduce customizable character skins and unlockable visual themes.
-- Implement online leaderboards powered by a cloud backend database.
-- Add gamepad / controller support alongside keyboard inputs.
-- Create cross-platform executable bundles (`.exe` / `.app`) for easier distribution.
-- Add additional obstacle types and boss stage events.
+- [x] Add sound effects and dynamic background music.
+- [x] Create standalone executable bundles (`.exe`) for easier distribution.
+- [x] Add additional obstacle types and high-speed hazards (Speeding Jeep, Double-Book clusters).
+- [ ] Introduce customizable character skins and unlockable visual themes.
+- [ ] Implement online leaderboards powered by a cloud backend database.
+- [ ] Add gamepad / controller support alongside keyboard inputs.
 
 ---
 
