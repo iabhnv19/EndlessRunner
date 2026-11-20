@@ -90,7 +90,8 @@ dino_run = [load("run1.svg"), load("run2.svg")]
 dino_duck = load("dino_duck.svg")
 book_img = load("book.svg")
 jeep_img = pygame.transform.scale_by(load("jeep.svg"), 1.35)
-bird_imgs = [load("bird1.svg"), load("bird2.svg")]
+bird_imgs = [pygame.transform.scale_by(load("bird1.svg"), 1.12),
+             pygame.transform.scale_by(load("bird2.svg"), 1.12)]
 cloud_img = load("cloud.svg")
 ground_img = load("ground.svg")
 background_img = load("background.svg")
@@ -774,10 +775,10 @@ def run_round():
 
             jeep_timer -= 1
             if jeep_timer <= 0:
-                obstacles = [o for o in obstacles if o.rect.x < WIDTH - 180]
+                obstacles = []
                 obstacles.append(Jeep(speed))
                 play_sfx(sfx_jeep)
-                spawn_timer = max(spawn_timer, 85)
+                spawn_timer = 140
                 jeep_timer = random.randint(450, 850)
 
             for ob in obstacles:
