@@ -89,7 +89,7 @@ sfx_ends = [s for s in (load_sfx("end.mp3"), load_sfx("end2.mp3")) if s is not N
 dino_run = [load("run1.svg"), load("run2.svg")]
 dino_duck = load("dino_duck.svg")
 book_img = load("book.svg")
-jeep_img = load("jeep.svg")
+jeep_img = pygame.transform.scale_by(load("jeep.svg"), 1.35)
 bird_imgs = [load("bird1.svg"), load("bird2.svg")]
 cloud_img = load("cloud.svg")
 ground_img = load("ground.svg")
@@ -297,7 +297,7 @@ class Jeep:
             spawn_burst(self.rect.right - 10, GROUND_Y - 4, "gold", 2)
 
     def hitbox(self):
-        return self.rect.inflate(-16, -10)
+        return self.rect.inflate(-20, -12)
 
     def draw(self):
         screen.blit(jeep_img, self.rect)
