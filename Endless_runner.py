@@ -82,12 +82,14 @@ def stop_sfx(sfx):
 sfx_start = load_sfx("start1.mp3", trim_leading=True)
 sfx_jump = load_sfx("jump.mp3")
 sfx_star = load_sfx("star.mp3")
+sfx_jeep = load_sfx("jeeeep.mp3") if os.path.exists(os.path.join(SFX_DIR, "jeeeep.mp3")) else load_sfx("jeeep.mp3")
 sfx_minigame_bgm = load_sfx("minigamebgm1.mp3")
 sfx_ends = [s for s in (load_sfx("end.mp3"), load_sfx("end2.mp3")) if s is not None]
 
 dino_run = [load("run1.svg"), load("run2.svg")]
 dino_duck = load("dino_duck.svg")
 book_img = load("book.svg")
+jeep_img = load("jeep.svg")
 bird_imgs = [load("bird1.svg"), load("bird2.svg")]
 cloud_img = load("cloud.svg")
 ground_img = load("ground.svg")
@@ -281,6 +283,24 @@ class Obstacle:
             screen.blit(book_img, self.rect)
         else:
             screen.blit(bird_imgs[(self.frame // 10) % 2], self.rect)
+
+class Jeep:
+    def __init__(self, current_speed):
+        self.kind = "jeep"
+        w, h = jeep_img.get_size()
+        self.rect = pygame.Rect(WIDTH + 50, GROUND_Y - h, w, h)
+        self.speed = max(current_speed * 1.85, 20)
+
+    def update(self, speed):
+        self.rect.x -= self.speed
+        if random.random() < 0.35 and 0 < self.rect.right < WIDTH + 40:
+            spawn_burst(self.rect.right - 10, GROUND_Y - 4, "gold", 2)
+
+    def hitbox(self):
+        return self.rect.inflate(-16, -10)
+
+    def draw(self):
+        screen.blit(jeep_img, self.rect)
 
 class Star:
     def __init__(self):
@@ -702,6 +722,7 @@ def run_round():
     for s in sfx_ends:
         stop_sfx(s)
     stop_sfx(sfx_start)
+    stop_sfx(sfx_jeep)
     play_sfx(sfx_start)
 
     dino = Dino()
@@ -711,6 +732,7 @@ def run_round():
     speed = START_SPEED
     ground_x = bg_x = 0
     spawn_timer = 60
+    jeep_timer = random.randint(350, 700)
     star_timer = random.randint(200, 400)
     stars_collected = 0
     next_mini = MINI_GAME_EVERY
@@ -729,6 +751,7 @@ def run_round():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     stop_sfx(sfx_start)
+                    stop_sfx(sfx_jeep)
                     for s in sfx_ends:
                         stop_sfx(s)
                     return "menu"
@@ -749,11 +772,20 @@ def run_round():
                 obstacles.append(Obstacle(speed))
                 spawn_timer = random.randint(55, 110)
 
+            jeep_timer -= 1
+            if jeep_timer <= 0:
+                obstacles = [o for o in obstacles if o.rect.x < WIDTH - 180]
+                obstacles.append(Jeep(speed))
+                play_sfx(sfx_jeep)
+                spawn_timer = max(spawn_timer, 85)
+                jeep_timer = random.randint(450, 850)
+
             for ob in obstacles:
                 ob.update(speed)
                 if not game_over and ob.hitbox().colliderect(dino.hitbox()):
                     game_over = True
                     stop_sfx(sfx_start)
+                    stop_sfx(sfx_jeep)
                     if sfx_ends:
                         play_sfx(random.choice(sfx_ends))
                     add_score(int(score))
@@ -780,6 +812,7 @@ def run_round():
             for c in clouds:
                 c.update(speed)
             if not game_over and int(score) >= next_mini:
+                stop_sfx(sfx_jeep)
                 game = MINI_GAMES[mini_count % len(MINI_GAMES)]()
                 result = play_mini_game(game, screen.copy())
                 bonus = MINI_GAME_REWARDS[result]
@@ -788,6 +821,7 @@ def run_round():
                 next_mini += MINI_GAME_EVERY
                 obstacles, stars = [], []     
                 spawn_timer = 90
+                jeep_timer = random.randint(350, 700)
                 banner = Banner(f"{game.title}: {result.upper()}" + (f"  +{bonus}" if bonus else ""), 120)
                 pygame.event.clear()
 
