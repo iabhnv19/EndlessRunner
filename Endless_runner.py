@@ -260,17 +260,38 @@ class Dino:
         screen.blit(self.image(), (self.x, self.y))
 
 
+def next_obstacle_delay(speed):
+    """Generates unpredictable spawn intervals with bursts, standard spacing, and breathers."""
+    pattern = random.choices(["burst", "standard", "lull"], weights=[30, 45, 25])[0]
+    base_min = max(38, int(62 - (speed - START_SPEED) * 1.6))
+    if pattern == "burst":
+        return random.randint(base_min, base_min + 18)
+    elif pattern == "standard":
+        return random.randint(base_min + 22, base_min + 58)
+    else:
+        return random.randint(base_min + 65, base_min + 125)
+
 class Obstacle:
     def __init__(self, speed):
-        self.kind = "bird" if (random.random() < 0.3 and speed > 9) else "book"
         self.frame = 0
-        if self.kind == "book":
-            w, h = book_img.get_size()
-            self.rect = pygame.Rect(WIDTH + 20, GROUND_Y - h, w, h)
-        else:
+        bw, bh = book_img.get_size()
+        roll = random.random()
+        if speed > 8.5 and roll < 0.38:
+            self.kind = "bird"
             w, h = bird_imgs[0].get_size()
-            bottom = GROUND_Y - random.choice([35, 13])   # 35 = slide under, 13 = jump over
+            # 3 varied flight altitudes:
+            # 14 = low bird (jump over), 40 = mid bird (duck under), 72 = high bird (glide over)
+            bottom = GROUND_Y - random.choice([14, 40, 72])
             self.rect = pygame.Rect(WIDTH + 20, bottom - h, w, h)
+        elif roll < 0.65 or speed < 9.5:
+            self.kind = "book"
+            self.count = 1
+            self.rect = pygame.Rect(WIDTH + 20, GROUND_Y - bh, bw, bh)
+        else:
+            # Double-book cluster for unpredictable rhythm and jump timing
+            self.kind = "book"
+            self.count = 2
+            self.rect = pygame.Rect(WIDTH + 20, GROUND_Y - bh, bw * 2 - 4, bh)
 
     def update(self, speed):
         self.rect.x -= speed
@@ -281,7 +302,9 @@ class Obstacle:
 
     def draw(self):
         if self.kind == "book":
-            screen.blit(book_img, self.rect)
+            bw = book_img.get_width()
+            for i in range(getattr(self, "count", 1)):
+                screen.blit(book_img, (self.rect.x + i * (bw - 2), self.rect.y))
         else:
             screen.blit(bird_imgs[(self.frame // 10) % 2], self.rect)
 
@@ -290,7 +313,8 @@ class Jeep:
         self.kind = "jeep"
         w, h = jeep_img.get_size()
         self.rect = pygame.Rect(WIDTH + 50, GROUND_Y - h, w, h)
-        self.speed = max(current_speed * 1.85, 20)
+        # Random speed variation so every jeep arrival feels unique
+        self.speed = max(current_speed * random.uniform(1.75, 2.05), random.uniform(19, 23))
 
     def update(self, speed):
         self.rect.x -= self.speed
@@ -732,8 +756,8 @@ def run_round():
     score = 0.0
     speed = START_SPEED
     ground_x = bg_x = 0
-    spawn_timer = 60
-    jeep_timer = random.randint(350, 700)
+    spawn_timer = next_obstacle_delay(speed)
+    jeep_timer = random.randint(400, 1100)
     star_timer = random.randint(200, 400)
     stars_collected = 0
     next_mini = MINI_GAME_EVERY
@@ -771,15 +795,15 @@ def run_round():
             spawn_timer -= 1
             if spawn_timer <= 0:
                 obstacles.append(Obstacle(speed))
-                spawn_timer = random.randint(55, 110)
+                spawn_timer = next_obstacle_delay(speed)
 
             jeep_timer -= 1
             if jeep_timer <= 0:
                 obstacles = []
                 obstacles.append(Jeep(speed))
                 play_sfx(sfx_jeep)
-                spawn_timer = 140
-                jeep_timer = random.randint(450, 850)
+                spawn_timer = random.randint(95, 155)
+                jeep_timer = random.randint(600, 1800)
 
             for ob in obstacles:
                 ob.update(speed)
@@ -821,8 +845,8 @@ def run_round():
                 mini_count += 1
                 next_mini += MINI_GAME_EVERY
                 obstacles, stars = [], []     
-                spawn_timer = 90
-                jeep_timer = random.randint(350, 700)
+                spawn_timer = next_obstacle_delay(speed)
+                jeep_timer = random.randint(500, 1200)
                 banner = Banner(f"{game.title}: {result.upper()}" + (f"  +{bonus}" if bonus else ""), 120)
                 pygame.event.clear()
 
